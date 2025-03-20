@@ -1,4 +1,6 @@
 # import numpy as np
+import json
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -40,13 +42,22 @@ sns.countplot(x='type', data=data)
 
 sns.barplot(x='type', y='amount', data=data)
 
-print("data['isFraud'].value_counts()")
-print(data['isFraud'].value_counts())
-print(data['isFraud'].value_counts().keys())
-print(data['isFraud'].value_counts().items())
 print()
+print("Fraud value_counts")
+print("=" * 30)
+is_fraud = json.loads(data['isFraud'].value_counts().to_json())
 
-exit(0)
+total_count = is_fraud["0"] + is_fraud["1"]
+false_percent = is_fraud["0"] / total_count * 100
+true_percent = is_fraud["1"] / total_count * 100
+
+print(f"total_count: {total_count}")
+print()
+print(f"false count: {is_fraud['0']}, {false_percent:.2f}%")
+print(f"true count: {is_fraud['1']}, {true_percent:.2f}%")
+
+print("=" * 30)
+
 plt.figure(figsize=(15, 6))
 sns.histplot(data['step'], bins=50, kde=True)
 
@@ -73,7 +84,7 @@ X_validation, X_test, y_validation, y_test = train_test_split(X_test, y_test, te
 
 print("X_train, X_test, X_validation, y_train, y_test,  y_validation")
 print(X_train.shape, X_test.shape, X_validation.shape, y_train.shape, y_test.shape,  y_validation.shape)
-exit(0)
+print("*" * 30)
 
 # LogisticRegression(max_iter=200) max_iter defaults to 100
 models = [LogisticRegression(max_iter=200), XGBClassifier(),
@@ -92,22 +103,21 @@ for i in range(len(models)):
 
     train_predictions = models[i].predict_proba(X_train)[:, 1]
     temp_train  =  ras(y_train, train_predictions)
-    print('Training Accuracy : ', temp_train)
+    print(f'Training Accuracy: {temp_train*100:.2f}%')
 
     y_predictions = models[i].predict_proba(X_test)[:, 1]
     temp_val = ras(y_test, y_predictions)
-    print('Validation Accuracy : ', temp_val)
-    print("="*30)
+    print(f'Validation Accuracy: {temp_val*100:.2f}%')
+    print("-"*30)
     if temp_val > validation_accuracy and temp_train > training_accuracy:
         validation_accuracy = temp_val
         training_accuracy = temp_train
         model_num = i
 
-
 print()
 print(f'Winner: {models[model_num]}')
-print('Training Accuracy : ', training_accuracy)
-print('Validation Accuracy : ', validation_accuracy)
+print(f'Training Accuracy: {training_accuracy*100:.2f}%')
+print(f'Validation Accuracy: {validation_accuracy*100:.2f}%')
 cm = ConfusionMatrixDisplay.from_estimator(models[model_num], X_test, y_test)
 
 cm.plot(cmap='Blues')
