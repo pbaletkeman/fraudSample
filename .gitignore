@@ -79,3 +79,4 @@ fabric.properties
 
 new_file.csv
 /.venv/
+.idea
